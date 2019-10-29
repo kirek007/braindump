@@ -1,0 +1,49 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$nodes_count = 3
+$vm_memory = 1024
+$vm_cpus = 2
+$instance_name_prefix = "k"
+$master_ip = "172.17.8.100"
+
+# Packages versions
+$kubernetes_version = "v1.16.2"
+$docker_package_name = "docker-ce=18.06.2~ce~3-0~ubuntu"
+
+# Token
+$kubernetes_token = "wl6ndy.vyaag8hxsnfikwyb"
+
+Vagrant.configure("2") do |config|
+    config.vagrant.plugins = "vagrant-scp"
+    config.vm.box = "bento/ubuntu-18.04"
+    config.vm.box_check_update = false
+
+    config.vm.provider :virtualbox do |v|
+        v.check_guest_additions = false
+        v.functional_vboxsf     = false
+    end
+
+    config.vm.provision "shell", path: "provision.sh", env: {:DOCKER_PACKAGE_NAME => $docker_package_name}
+
+    (0..$nodes_count).each do |i|
+        config.vm.define vm_name = "%s-%02d" % [$instance_name_prefix, i] do |node|
+            node.vm.hostname = "%s-%02d" % [$instance_name_prefix, i]
+
+            node.vm.provider :virtualbox do |vb|
+                vb.gui = false
+                vb.memory = $vm_memory
+                vb.cpus = $vm_cpus
+            end
+
+            if i == 0 #1 isMaster
+                node.vm.network :private_network, ip: $master_ip
+                node.vm.provision "shell", path: "init_master.sh", env: {:MASTER_IP => $master_ip, :KUBERNETES_VERSION => $kubernetes_version, :KUBERNETES_TOKEN => $kubernetes_token}
+            else
+                ip = "172.17.8.#{i+110}"
+                node.vm.network :private_network, ip: ip
+                node.vm.provision "shell", path: "init_node.sh", env: {:MASTER_IP => $master_ip, :KUBERNETES_TOKEN => $kubernetes_token}
+            end
+        end
+    end
+end
