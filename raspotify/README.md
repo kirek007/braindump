@@ -12,6 +12,8 @@ bluetoothctl trust xx:xx:xx:xx:xx # Enable auto connect
 
 **Info: I you can't connect to your device be sure to start pulseaudio in advance; other way bluetoothctl can't connect because there is no supported audio profile.**
 
+_Disclamer: Yes, I'm using root account instead of dedicated raspotify account because I CAN NOT make pulseaudio+bluetooth+libspotify combo work as a user, usualy there is no sound probably because some permissions between pulseaudio and bluetooth_ 
+
 4. Start pulseaudio server on startup
 
 File: `/lib/systemd/system/pulseaudio.service`
