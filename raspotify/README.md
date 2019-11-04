@@ -25,7 +25,8 @@ Description=Sound Service
 [Service]
 # Note that notify will only work if --daemonize=no
 Type=notify
-ExecStart=/usr/bin/pulseaudio --daemonize=no
+ExecStart=/usr/bin/pulseaudio --disallow-exit --realtime -v --no-cpu-limit --exit-idle-time=-1
+
 Restart=on-failure
 
 [Install]
